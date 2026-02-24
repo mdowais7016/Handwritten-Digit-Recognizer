@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Digit Recognizer</title>
+    <style>
+        canvas {
+            border: 2px solid black;
+        }
+        body {
+            text-align: center;
+            font-family: Arial;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Draw a Digit (0-9)</h2>
+<canvas id="canvas" width="280" height="280"></canvas>
+<br><br>
+<button onclick="clearCanvas()">Clear</button>
+<button onclick="predict()">Predict</button>
+
+<h3 id="result"></h3>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+ctx.fillStyle = "black";
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+let drawing = false;
+
+canvas.addEventListener("mousedown", () => drawing = true);
+canvas.addEventListener("mouseup", () => drawing = false);
+canvas.addEventListener("mousemove", draw);
+
+function draw(e){
+    if(!drawing) return;
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.arc(e.offsetX, e.offsetY, 10, 0, Math.PI*2);
+    ctx.fill();
+}
+
+function clearCanvas(){
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    document.getElementById("result").innerText = "";
+}
+
+function predict(){
+    const dataURL = canvas.toDataURL();
+    fetch("/predict", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({image: dataURL})
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("result").innerText = "Prediction: " + data.digit;
+    });
+}
+</script>
+
+</body>
+</html>
